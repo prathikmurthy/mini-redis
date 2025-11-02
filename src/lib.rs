@@ -10,6 +10,8 @@ pub mod server {
 
         let mut buffer: Vec<u8> = Vec::new();
 
+        let mut last_seen = 0;
+
         for conn in listener.incoming() {
             let mut sock = conn?;
             loop {
@@ -22,6 +24,15 @@ pub mod server {
 
                 match buffer[0] {
                     0x2B => { // '+': simple string
+                        for i in last_seen..buffer.len() {
+                            if buffer[i] == 0x0A {
+                                if buffer[i-1] == 0x0D {
+                                    let good_string = &buffer[1..i];
+                                    println!("string {}", String::from_utf8_lossy(&good_string).to_string());
+                                    buffer.clear();
+                                }
+                            }
+                        }
 
                     },
                     0x2D => { // '-': error 
@@ -62,7 +73,7 @@ pub mod client {
         loop {
             let msg = input!("");
 
-            send_message(&mut stream, &msg)?;
+            send_message(&mut stream, msg.as_bytes())?;
     
             // let response = receive_message(&mut stream)?;
 

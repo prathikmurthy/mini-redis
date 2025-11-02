@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
-pub fn send_message(stream: &mut TcpStream, msg: &str) -> std::io::Result<()> {
-    println!("Outgoing message: {}", msg);
-    stream.write_all(msg.as_bytes())?;
+pub fn send_message(stream: &mut TcpStream, msg: &[u8]) -> std::io::Result<()> {
+    let i = [msg, &[0x0D, 0x0A]].concat();
+    stream.write_all(&i)?;
     Ok(())
 }
 
