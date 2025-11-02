@@ -9,9 +9,9 @@ pub fn send_message(stream: &mut TcpStream, msg: &str) -> std::io::Result<()> {
 
 // This has to return String and not &str because the fn owns the res str, can't
 // return a borrowed ref to it after function ends
-pub fn receive_message(stream: &mut TcpStream) -> std::io::Result<String> {
+pub fn receive_message(stream: &mut TcpStream) -> std::io::Result<Box<[u8]>> {
     let mut buf = [0u8; 128];
     let n = stream.read(&mut buf)?;
-    let res = String::from_utf8_lossy(&buf[..n]).to_string();
-    Ok(res)
+    // let res = String::from_utf8_lossy(&buf[..n]).to_string();
+    Ok(buf[..n].to_vec().into_boxed_slice())
 }
