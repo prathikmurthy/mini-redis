@@ -35,8 +35,10 @@ pub mod server {
                                 break;
                             }
                         }
+                        // Set last_seen to start from the position that could be \r
+                        // This ensures we don't miss a \r\n split across reads
                         if !buffer.is_empty() {
-                            last_seen = buffer.len().saturating_sub(1);
+                            last_seen = buffer.len().saturating_sub(1).max(1);
                         }
                     },
                     0x2D => { // '-': error 
