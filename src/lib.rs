@@ -20,20 +20,26 @@ pub mod server {
                     break;
                 }
                 
-                buffer.append(&mut msg.to_vec());
+                buffer.extend_from_slice(&msg);
 
                 match buffer[0] {
                     0x2B => { // '+': simple string
                         for i in last_seen..buffer.len() {
-                            if buffer[i] == 0x0A {
-                                if buffer[i-1] == 0x0D {
-                                    let good_string = &buffer[1..i];
-                                    println!("string {}", String::from_utf8_lossy(&good_string).to_string());
-                                    buffer.clear();
-                                }
+                            if buffer[i] == 0x0A
+                                && i > 0
+                                && buffer[i-1] == 0x0D {
+                                let good_string = &buffer[1..i-1];
+                                println!("string {}", String::from_utf8_lossy(good_string));
+                                buffer.clear();
+                                last_seen = 0;
+                                break;
                             }
                         }
-
+                        // Set last_seen to start from the position that could be \r
+                        // This ensures we don't miss a \r\n split across reads
+                        if !buffer.is_empty() {
+                            last_seen = buffer.len().saturating_sub(1).max(1);
+                        }
                     },
                     0x2D => { // '-': error 
 
